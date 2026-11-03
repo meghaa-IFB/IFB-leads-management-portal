@@ -1,0 +1,36 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start IFB leads portal",
+      "type": "shell",
+      "command": "npm start",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": {
+          "regexp": "^IFB lead management portal running on http://localhost:\\d+$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^> node server\\.js$",
+          "endsPattern": "^IFB lead management portal running on http://localhost:\\d+$"
+        }
+      },
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "presentation": {
+        "reveal": "never",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false
+      },
+      "serverReadyAction": {
+        "pattern": "IFB lead management portal running on (http://localhost:\\d+)",
+        "uriFormat": "%s",
+        "action": "openExternally"
+      }
+    }
+  ]
+}

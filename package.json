@@ -1,0 +1,16 @@
+{
+  "name": "ifb-leads-management-portal",
+  "version": "1.0.0",
+  "description": "IFB OEM Lead Management Portal with dashboard, customer master, product master, and lead tracking",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "jszip": "^3.10.2",
+    "xlsx": "^0.18.5"
+  }
+}

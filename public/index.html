@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IFB OEM Lead Management Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="mainSidebar">
+        <div class="brand-wrap">
+          <div class="brand-logo">IFB</div>
+          <div>
+            <div class="brand-title">OEM Lead Portal</div>
+            <div class="brand-tag">Motor Division</div>
+          </div>
+        </div>
+
+        <nav class="side-nav" aria-label="Main navigation">
+          <button class="nav-item active" data-page="findLeads" type="button">Find Leads</button>
+          <button class="nav-item" data-page="updateLead" type="button">Update Lead Details</button>
+          <button class="nav-item" data-page="addNewLead" type="button">Add New Lead Details</button>
+          <button class="nav-item" data-page="reports" type="button">Reports</button>
+          <button class="nav-item" data-page="settings" type="button">Settings</button>
+        </nav>
+      </aside>
+      <button type="button" class="sidebar-backdrop" id="sidebarBackdrop" aria-label="Close navigation menu" tabindex="-1"></button>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div class="topbar-heading">
+            <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Open navigation menu" aria-controls="mainSidebar" aria-expanded="false">
+              <span></span><span></span><span></span>
+            </button>
+            <div>
+              <p class="eyebrow">IFB Industries Ltd.</p>
+              <h1 id="pageTitle">Find Leads</h1>
+            </div>
+          </div>
+          <div class="topbar-actions">
+            <div class="header-status">
+              <span class="status-indicator"></span>
+              <span id="liveClock">--:--:--</span>
+            </div>
+          </div>
+        </header>
+
+        <section class="page active" id="findLeadsPage">
+          <section class="card lead-lookup-card">
+            <h3>Find a lead</h3>
+            <p class="muted">Enter the customer and product names to view the lead profile.</p>
+            <form id="leadLookupForm">
+              <div class="field-group">
+                <label for="searchCustomerName">Customer name</label>
+                <input id="searchCustomerName" type="search" placeholder="Enter customer name" required />
+              </div>
+              <div class="field-group">
+                <label for="searchProductName">Product name</label>
+                <input id="searchProductName" type="search" placeholder="Enter product name" required />
+              </div>
+              <div class="lead-lookup-actions">
+                <button type="submit" class="primary">Find Lead</button>
+                <button type="reset" class="secondary">Clear</button>
+              </div>
+            </form>
+            <div id="leadLookupMessage" class="lead-lookup-message" role="status" aria-live="polite"></div>
+          </section>
+          <section class="card recent-searches-card" aria-labelledby="recentSearchesHeading">
+            <div class="card-header">
+              <div>
+                <h3 id="recentSearchesHeading">Recent searches</h3>
+                <p class="muted">Searches from the last 30 days.</p>
+              </div>
+              <button type="button" class="text-button" id="clearRecentSearchesBtn">Clear history</button>
+            </div>
+            <div id="recentLeadSearches" class="recent-search-list" aria-live="polite"></div>
+          </section>
+        </section>
+
+        <section class="page" id="leadProfilePage">
+          <div class="card profile-page-shell">
+            <div class="profile-page-toolbar">
+              <label id="profileLeadPicker" for="profileLeadSelect">Matching leads
+                <select id="profileLeadSelect"></select>
+              </label>
+              <div class="toolbar-actions">
+                <button type="button" class="secondary" id="backToFindLeadsBtn">Back</button>
+              </div>
+            </div>
+            <div class="profile-slide-tabs" role="tablist" aria-label="Lead profile slides">
+              <button type="button" class="profile-slide-tab active" id="profileSlideTab1" role="tab" aria-selected="true" aria-controls="profileSlide1" data-slide-index="0">Company Profile &amp; Relationship</button>
+              <button type="button" class="profile-slide-tab" id="profileSlideTab2" role="tab" aria-selected="false" aria-controls="profileSlide2" data-slide-index="1">Customer History</button>
+              <button type="button" class="profile-slide-tab" id="profileSlideTab3" role="tab" aria-selected="false" aria-controls="profileSlide3" data-slide-index="2">Technical, Sample &amp; Commercial Status</button>
+              <button type="button" class="profile-slide-tab" id="profileSlideTab4" role="tab" aria-selected="false" aria-controls="profileSlide4" data-slide-index="3">Operational Readiness</button>
+            </div>
+            <div id="profilePageContent" class="profile-page-content"></div>
+            <div id="leadDetailView" hidden></div>
+          </div>
+        </section>
+
+        <section class="page" id="addLeadPage">
+          <div class="card form-shell">
+            <div class="form-header-row">
+              <div class="form-page-heading">
+                <h3 id="leadFormHeading">Add lead manually</h3>
+                <p class="muted" id="leadFormSubheading">Enter customer, product, qualification, and relationship details below. Excel import is optional for bulk uploads.</p>
+              </div>
+              <div class="form-header-actions">
+                <span id="leadFormModeTag" class="tag">Create mode</span>
+              </div>
+            </div>
+            <!-- Customer selector shown only in Update Lead Details mode -->
+            <div class="update-lead-selector-panel" id="updateLeadSelectorPanel" style="display: none; background: var(--slate-100); border: 1px solid var(--slate-200); border-radius: 12px; padding: 16px 20px; margin-bottom: 22px;">
+              <h4 style="margin: 0 0 6px; color: var(--navy-800);">Select Customer to Fetch Lead Details</h4>
+              <p class="muted" style="margin: 0 0 12px; font-size: 0.85rem;">Select an existing customer from the dropdown to automatically load their lead data. You can then alter any data and update the lead.</p>
+              <div class="field-grid two-col" style="margin-bottom: 0;">
+                <div class="field-group">
+                  <label for="updateCustomerSelect"><strong>Customer Name</strong></label>
+                  <select id="updateCustomerSelect">
+                    <option value="">-- Select Customer Name --</option>
+                  </select>
+                </div>
+                <div class="field-group" id="updateProductSelectGroup" style="display: none;">
+                  <label for="updateProductSelect"><strong>Select Lead / Product</strong></label>
+                  <select id="updateProductSelect"></select>
+                </div>
+              </div>
+            </div>
+
+            <div class="excel-import-panel" id="excelImportPanel">
+              <div>
+                <h4>Optional: Import from Excel</h4>
+                <p id="excelUploadMessage" class="excel-upload-message" role="status" aria-live="polite">
+                  Add multiple leads at once. Use one lead per row with Customer Name, Application, and Part No. columns.
+                </p>
+              </div>
+              <div class="excel-import-actions">
+                <button type="button" class="secondary excel-template-button" id="downloadLeadExcelTemplateBtn">Download template</button>
+                <button type="button" class="secondary excel-upload-button" id="uploadLeadExcelBtn">Upload Excel</button>
+                <input type="file" id="leadExcelFile" accept=".xlsx,.xls" hidden />
+              </div>
+            </div>
+
+            <form id="leadForm">
+              <section class="excel-form-section">
+                <div class="form-section-heading">
+                  <span class="form-section-step" aria-hidden="true">01</span>
+                  <div>
+                    <h4>Customer &amp; product</h4>
+                    <p>Select the customer and the product requested for this lead.</p>
+                  </div>
+                </div>
+                <div class="field-grid three-col">
+                  <div class="field-group">
+                    <label>Customer name</label>
+                    <input name="customerName" id="leadCustomerNameInput" list="customerNameSuggestions" placeholder="Enter customer name" required />
+                    <datalist id="customerNameSuggestions"></datalist>
+                  </div>
+                  <div class="field-group">
+                    <label>Customer code</label>
+                    <input name="customerCode" id="leadCustomerCodeInput" placeholder="Enter customer code" />
+                  </div>
+                  <div class="field-group">
+                    <label>Product name</label>
+                    <input name="productName" id="leadProductNameInput" list="productNameSuggestions" placeholder="Enter product name" required />
+                    <datalist id="productNameSuggestions"></datalist>
+                  </div>
+                  <div class="field-group">
+                    <label>Application</label>
+                    <input name="application" id="leadApplicationInput" list="applicationSuggestions" placeholder="Enter application" required />
+                    <datalist id="applicationSuggestions"></datalist>
+                  </div>
+                  <div class="field-group">
+                    <label>Part No.</label>
+                    <input name="partNumber" id="leadPartNumberInput" list="partNumberSuggestions" placeholder="Enter part number" required />
+                    <datalist id="partNumberSuggestions"></datalist>
+                  </div>
+                  <div class="field-group">
+                    <label>Product description</label>
+                    <input name="productDescription" id="leadProductDescriptionInput" placeholder="Enter product description" />
+                  </div>
+                </div>
+              </section>
+
+              <section class="excel-form-section">
+                <div class="form-section-heading">
+                  <span class="form-section-step" aria-hidden="true">02</span>
+                  <div>
+                    <h4>Company profile &amp; relationship</h4>
+                    <p>Capture the OEM contact, relationship, product scope, and business potential.</p>
+                  </div>
+                </div>
+                <div class="field-grid three-col">
+                  <div class="field-group"><label>Contact name</label><input name="contactPersonName" /></div>
+                  <div class="field-group"><label>Contact designation</label><input name="contactPersonDesignation" /></div>
+                  <div class="field-group"><label>Contact number</label><input name="contactNumber" type="tel" /></div>
+                  <div class="field-group"><label>Email</label><input name="email" type="email" /></div>
+                  <div class="field-group"><label>Office location</label><input name="officeLocation" /></div>
+                  <div class="field-group"><label>Manufacturing unit location</label><input name="manufacturingUnitLocation" /></div>
+                  <div class="field-group"><label>Promoters / leadership</label><input name="promoters" /></div>
+                  <div class="field-group"><label>Current product scope</label><textarea name="currentProductScope"></textarea></div>
+                  <div class="field-group"><label>Other product scope</label><textarea name="otherProductScope"></textarea></div>
+                  <div class="field-group"><label>Motor technology</label><input name="motorTechnology" /></div>
+                  <div class="field-group"><label>Induction models</label><input name="inductionModels" /></div>
+                  <div class="field-group"><label>BLDC models</label><input name="BLDCModels" /></div>
+                  <div class="field-group"><label>Annual volume potential</label><input type="number" min="0" step="1" name="annualVolumePotential" /></div>
+                  <div class="field-group"><label>Expected initial volume</label><input type="number" min="0" step="1" name="expectedInitialVolume" /></div>
+                  <div class="field-group"><label>Relationship background</label><textarea name="relationshipBackground"></textarea></div>
+                  <div class="field-group"><label>Market intelligence</label><textarea name="marketIntelligence"></textarea></div>
+                </div>
+              </section>
+              <section class="excel-form-section">
+                <div class="form-section-heading">
+                  <span class="form-section-step" aria-hidden="true">03</span>
+                  <div>
+                    <h4>Technical, sample &amp; commercial status</h4>
+                    <p>Track validation, samples, RFQ and quotation progress, and the next customer action.</p>
+                  </div>
+                </div>
+                <div class="field-grid three-col">
+                  <div class="field-group"><label>Lead status</label><select name="status">
+                    <option>New Lead</option><option>Contacted</option><option>Technical Discussion</option><option>Sample Given</option><option>RFQ Received</option><option>Quotation Submitted</option><option>Negotiation</option><option>Won</option><option>Lost</option><option>On Hold</option>
+                  </select></div>
+                  <div class="field-group"><label>Responsible person</label><input name="responsiblePerson" /></div>
+                  <div class="field-group"><label>Lead source</label><input name="leadSource" /></div>
+                  <div class="field-group"><label>Follow-up date</label><input type="date" name="followUpDate" /></div>
+                  <div class="field-group"><label>Next action</label><input name="nextAction" /></div>
+                  <div class="field-group"><label>Technical discussion</label><select name="technicalDiscussion"><option value="false">No</option><option value="true">Yes</option></select></div>
+                  <div class="field-group"><label>Wattage(s)</label><input name="wattage" /></div>
+                  <div class="field-group"><label>Stack size</label><input name="stackSize" /></div>
+                  <div class="field-group"><label>Form factor</label><input name="formFactor" /></div>
+                  <div class="field-group"><label>Validation status</label><input name="validationStatus" /></div>
+                  <div class="field-group"><label>Technical remarks</label><textarea name="technicalRemarks"></textarea></div>
+                  <div class="field-group"><label>Sample given</label><select name="sampleGiven"><option value="false">No</option><option value="true">Yes</option></select></div>
+                  <div class="field-group"><label>Sample quantity</label><input type="number" min="0" step="1" name="sampleQuantity" /></div>
+                  <div class="field-group"><label>Sample date</label><input type="date" name="sampleDate" /></div>
+                  <div class="field-group"><label>RFQ received</label><select name="rfqReceived"><option value="false">No</option><option value="true">Yes</option></select></div>
+                  <div class="field-group"><label>RFQ date</label><input type="date" name="rfqDate" /></div>
+                  <div class="field-group"><label>Quoted</label><select name="quoted"><option value="false">No</option><option value="true">Yes</option></select></div>
+                  <div class="field-group"><label>Quoted price</label><input type="number" min="0" step="0.01" name="quotedPrice" /></div>
+                  <div class="field-group"><label>Quotation date</label><input type="date" name="quotationDate" /></div>
+                  <div class="field-group"><label>Quotation revision</label><input name="quotationRevision" /></div>
+                  <div class="field-group"><label>Commercial remarks</label><textarea name="commercialRemarks"></textarea></div>
+                </div>
+                <div class="form-subsection">
+                  <div class="form-subsection-heading">
+                    <div><h5>Next steps / action items</h5><p class="muted">Add an owner, target date, and any revised date or remarks.</p></div>
+                    <button type="button" class="secondary compact-button" data-add-entry="action">Add action item</button>
+                  </div>
+                  <div id="actionItemsEditor" class="profile-entry-list"></div>
+                  <p class="muted entry-empty-note" data-empty-note="action">No action items added.</p>
+                </div>
+              </section>
+
+              <section class="excel-form-section">
+                <div class="form-section-heading">
+                  <span class="form-section-step" aria-hidden="true">04</span>
+                  <div>
+                    <h4>Customer history</h4>
+                    <p>Record dated relationship and engagement milestones for the OEM profile.</p>
+                  </div>
+                </div>
+                <div class="form-subsection">
+                  <div class="form-subsection-heading">
+                    <div><h5>Relationship timeline</h5><p class="muted">Add a date, event, and short description for each milestone.</p></div>
+                    <button type="button" class="secondary compact-button" data-add-entry="timeline">Add timeline entry</button>
+                  </div>
+                  <div id="timelineEditor" class="profile-entry-list"></div>
+                  <p class="muted entry-empty-note" data-empty-note="timeline">No timeline entries added.</p>
+                </div>
+              </section>
+
+              <section class="excel-form-section" id="operationalReadinessFormSection">
+                <div class="form-section-heading">
+                  <span class="form-section-step" aria-hidden="true">05</span>
+                  <div>
+                    <h4>Operational Readiness</h4>
+                    <p>Capture component lead times, mass-production challenges, and child-parts readiness.</p>
+                  </div>
+                </div>
+                <div class="table-scroll">
+                  <table class="readiness-table">
+                    <thead><tr><th>Parameter</th><th>Motor</th><th>Control PCBA</th><th>Touch PCBA</th><th>Tooling</th></tr></thead>
+                    <tbody>
+                      <tr><th scope="row">Lead time</th>
+                        <td><input aria-label="Motor lead time" name="motorLeadTime" /></td>
+                        <td><input aria-label="Control PCBA lead time" name="controlPCBALeadTime" /></td>
+                        <td><input aria-label="Touch PCBA lead time" name="touchPCBALeadTime" /></td>
+                        <td><input aria-label="Tooling lead time" name="toolingLeadTime" /></td>
+                      </tr>
+                      <tr><th scope="row">Challenges for mass production</th>
+                        <td><textarea aria-label="Motor mass production challenges" name="motorMassProductionChallenges"></textarea></td>
+                        <td><textarea aria-label="Control PCBA mass production challenges" name="controlPCBAMassProductionChallenges"></textarea></td>
+                        <td><textarea aria-label="Touch PCBA mass production challenges" name="touchPCBAMassProductionChallenges"></textarea></td>
+                        <td><textarea aria-label="Tooling mass production challenges" name="toolingMassProductionChallenges"></textarea></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="field-grid three-col">
+                  <div class="field-group"><label>Child parts lead time — prototype</label><input name="childPartsPrototypeLeadTime" /></div>
+                  <div class="field-group"><label>Child parts lead time — mass production</label><input name="childPartsMassProductionLeadTime" /></div>
+                  <div class="field-group"><label>Mass production investments</label><textarea name="massProductionInvestments"></textarea></div>
+                </div>
+              </section>
+
+              <div class="form-actions">
+                <button type="submit" class="primary" id="saveLeadBtn">Save Lead</button>
+                <button type="button" class="secondary" id="updateLeadBtn">Update Lead</button>
+                <button type="button" class="ghost" id="resetLeadBtn">Reset</button>
+                <button type="button" class="text-button" id="cancelLeadBtn">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section class="page" id="customersPage">
+          <div class="master-page-header">
+            <h2>Customer Master</h2>
+            <button type="button" class="secondary" data-page="settings">Back to Settings</button>
+          </div>
+          <div class="master-layout">
+            <div class="card master-form-card">
+              <h3>Customer master</h3>
+              <form id="customerForm">
+                <div class="field-group">
+                  <label>Customer name</label>
+                  <input name="customerName" required />
+                </div>
+                <div class="field-group">
+                  <label>Customer code</label>
+                  <input name="customerCode" required />
+                </div>
+                <div class="field-group">
+                  <label>Category</label>
+                  <input name="category" />
+                </div>
+                <div class="field-group">
+                  <label>Location</label>
+                  <input name="location" />
+                </div>
+                <div class="field-group">
+                  <label>Primary contact</label>
+                  <input name="primaryContact" />
+                </div>
+                <div class="field-group">
+                  <label>Phone</label>
+                  <input name="phone" />
+                </div>
+                <div class="field-group">
+                  <label>Email</label>
+                  <input name="email" type="email" />
+                </div>
+                <div class="field-group">
+                  <label>Notes</label>
+                  <textarea name="notes"></textarea>
+                </div>
+                <div class="toolbar-actions">
+                  <button type="submit" class="primary">Save customer</button>
+                  <button type="button" class="secondary" id="resetCustomerFormBtn">Reset</button>
+                </div>
+              </form>
+            </div>
+            <div class="card master-list-card">
+              <h3>Saved customers</h3>
+              <div id="customerMasterList" class="master-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="productsPage">
+          <div class="master-page-header">
+            <h2>Product Master</h2>
+            <button type="button" class="secondary" data-page="settings">Back to Settings</button>
+          </div>
+          <div class="master-layout">
+            <div class="card master-form-card">
+              <h3>Product master</h3>
+              <form id="productForm">
+                <div class="field-group">
+                  <label>Product name</label>
+                  <input name="productName" required />
+                </div>
+                <div class="field-group">
+                  <label>Application</label>
+                  <input name="application" />
+                </div>
+                <div class="field-group">
+                  <label>Part number</label>
+                  <input name="partNumber" required />
+                </div>
+                <div class="field-group">
+                  <label>Description</label>
+                  <textarea name="description"></textarea>
+                </div>
+                <div class="field-group">
+                  <label>Category</label>
+                  <input name="category" />
+                </div>
+                <div class="field-group">
+                  <label>Status</label>
+                  <select name="status">
+                    <option>Active</option>
+                    <option>Retired</option>
+                    <option>Prototype</option>
+                  </select>
+                </div>
+                <div class="toolbar-actions">
+                  <button type="submit" class="primary">Save product</button>
+                  <button type="button" class="secondary" id="resetProductFormBtn">Reset</button>
+                </div>
+              </form>
+            </div>
+            <div class="card master-list-card">
+              <h3>Saved products</h3>
+              <div id="productMasterList" class="master-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="followupsPage">
+          <div class="card">
+            <h3>Follow-ups and action items</h3>
+            <div id="followupBoard" class="board-list"></div>
+          </div>
+        </section>
+
+        <section class="page" id="reportsPage">
+          <div class="card">
+            <h3>Reports</h3>
+            <div id="reportSummary" class="report-summary"></div>
+          </div>
+          <div class="card report-leads-card">
+            <div class="report-leads-header">
+              <div>
+                <h3>Leads</h3>
+                <p class="muted">Select a lead name to view its full details.</p>
+              </div>
+              <div class="report-leads-tools">
+                <label for="reportLeadFilter">Filter</label>
+                <select id="reportLeadFilter">
+                  <option value="all">All leads</option>
+                  <option value="active">Active</option>
+                  <option value="follow-up">Needs follow-up</option>
+                  <option value="closed">Won / closed</option>
+                </select>
+                <span id="reportLeadCount" class="tag"></span>
+              </div>
+            </div>
+            <div id="reportLeadDetails"></div>
+          </div>
+        </section>
+
+        <section class="page" id="settingsPage">
+          <div class="settings-page-header">
+            <h2>Settings</h2>
+            <p class="muted">Manage how the portal looks and keep your local data tidy.</p>
+          </div>
+          <section class="card settings-section" aria-labelledby="appearanceSettingsHeading">
+            <div class="settings-section-heading">
+              <h3 id="appearanceSettingsHeading">Appearance</h3>
+              <p class="muted">Choose a theme and layout density for this device.</p>
+            </div>
+            <div class="settings-controls">
+              <div class="setting-control">
+                <div>
+                  <label for="themePreference">Theme</label>
+                  <p class="muted">Choose the portal's light or dark appearance.</p>
+                </div>
+                <select id="themePreference">
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                </select>
+              </div>
+              <div class="setting-control">
+                <div>
+                  <label for="densityPreference">Display density</label>
+                  <p class="muted">Compact mode fits more content on screen.</p>
+                </div>
+                <select id="densityPreference">
+                  <option value="comfortable">Comfortable</option>
+                  <option value="compact">Compact</option>
+                </select>
+              </div>
+            </div>
+            <p id="settingsSaveStatus" class="settings-save-status" role="status" aria-live="polite"></p>
+          </section>
+          <section class="card settings-section" aria-labelledby="operationalReadinessSettingsHeading">
+            <div class="settings-section-heading">
+              <h3 id="operationalReadinessSettingsHeading">Operational Readiness</h3>
+              <p class="muted">Choose whether operational readiness fields appear in lead entry and lead details.</p>
+            </div>
+            <div class="settings-controls">
+              <div class="setting-control">
+                <div>
+                  <label id="operationalReadinessLabel" for="operationalReadinessPreference">Operational Readiness</label>
+                  <p class="muted">When disabled, readiness fields are hidden. Existing saved values are kept.</p>
+                </div>
+                <select id="operationalReadinessPreference" aria-labelledby="operationalReadinessLabel">
+                  <option value="enabled">Enabled</option>
+                  <option value="disabled">Disabled</option>
+                </select>
+              </div>
+            </div>
+          </section>
+          <section class="card settings-section" aria-labelledby="dataSettingsHeading">
+            <div class="settings-section-heading">
+              <h3 id="dataSettingsHeading">Data management</h3>
+              <p class="muted">Lead and master data are stored by the portal. These actions do not delete saved leads.</p>
+            </div>
+            <div class="settings-data-summary">
+              <div><strong id="settingsLeadCount">0</strong><span>Leads</span></div>
+              <div><strong id="settingsCustomerCount">0</strong><span>Customers</span></div>
+              <div><strong id="settingsProductCount">0</strong><span>Products</span></div>
+            </div>
+            <div class="settings-shortcuts">
+              <button type="button" class="secondary" id="refreshPortalDataBtn">Refresh portal data</button>
+              <button type="button" class="secondary" id="clearSettingsSearchHistoryBtn">Clear recent search history</button>
+              <button type="button" class="secondary" data-page="customers">Customer Master</button>
+              <button type="button" class="secondary" data-page="products">Product Master</button>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" aria-live="polite"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
